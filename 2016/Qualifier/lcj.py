@@ -1,6 +1,7 @@
 import re
 from random import random
 from collections import deque
+from functools import lru_cache, reduce
 
 BASE_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 _lcj_case = 1
@@ -9,11 +10,15 @@ R_CASE = re.compile(r'Case #\d+:\s+')
 ## Tips
 # To add sets, do set | set
 
+## Python 3 tips
+# To convert from set to list easily and vice versa, use {*list} and [*set]
+
 ## Summary
 
 # Jam
 # lines(letter)           all lines of latest input of $letter but first
 # openw()                 a file object opened for output
+# testify(lines)          a list of lists containing the testcases, where testcases are preceded by the number of lines
 
 # Arrays
 # chunk(arr, length)      $arr split into chunks of length $length, and adds the rest
@@ -39,6 +44,10 @@ R_CASE = re.compile(r'Case #\d+:\s+')
 # hexs(n)                 $n converted to a hexadecimal string
 # hexa(n)                 $n converted to a hexadecimal array
 
+# Sequences
+# fib(n)                  term number $n of the Fibonacci sequence
+# lucas(n)                term number $n of the Lucas sequence
+
 # Misc
 # rand(n=1)               a random number between 0 and 1 inclusive, or a random integer between 0 and $n inclusive
 
@@ -51,6 +60,18 @@ def lines(letter):
 	lines = _lcj_lines(letter + '-large.in')
 	if lines:
 		return [line[:-1] for line in lines]
+	i = 100
+	while i>-1:
+		lines = _lcj_lines(letter + '-small-2-attempt' + str(i) + '.in')
+		if lines:
+			return [line[:-1] for line in lines]
+		i -= 1
+	i = 100
+	while i>-1:
+		lines = _lcj_lines(letter + '-small-1-attempt' + str(i) + '.in')
+		if lines:
+			return [line[:-1] for line in lines]
+		i -= 1
 	i = 100
 	while i>-1:
 		lines = _lcj_lines(letter + '-small-attempt' + str(i) + '.in')
@@ -68,6 +89,14 @@ def _lcj_lines(path):
 			return f.readlines()[1:]
 	except:
 		return False
+
+def testify(lines):
+	result = []
+	while lines:
+		n = int(lines[0])
+		result += [lines[1:n+1]]
+		lines = lines[n+1:]
+	return result
 
 def outLines(n=-1):
 	if n != -1:
@@ -91,7 +120,7 @@ def remCase(lines):
 def case(f, *obj):
 	global _lcj_case
 	f.write('Case #'+str(_lcj_case)+': ')
-	if len(obj):
+	if obj:
 		for o in obj[:-1]:
 			f.write(str(o)+' ')
 		f.write(str(obj[-1]))
@@ -158,7 +187,7 @@ def basea(n, base): #assumes n is int
 	arr = deque()
 	while n:
 		arr.appendleft(n%base)
-		n /= base
+		n //= base
 	return list(arr)
 
 def bases(n, base):
@@ -187,6 +216,20 @@ def hexs(n):
 
 def hexa(n):
 	return [BASE_DIGITS.index(c) for c in hexs(n)]
+
+## Sequence
+
+@lru_cache(maxsize=None)
+def fib():
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+@lru_cache(maxsize=None)
+def lucas():
+    if n < 2:
+        return 1 if n else 2
+    return lucas(n - 1) + lucas(n - 2)
 
 ## Misc
 
